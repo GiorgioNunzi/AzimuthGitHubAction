@@ -12,11 +12,11 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
     try {
         const response = await axios.post(url, payload, headers)
         if (response.status !== 200) {
-            console.error("Error while authenticating. Code: " + response.status);
+            core.setFailed("Error while authenticating. Code: " + response.status);
             return;
         }
         if (!('token' in response.data)) {
-            console.error("No token found in response?!");
+            core.setFailed('No taken received during authentication.')
             return;
         }
         var token = response.data['token']
@@ -30,6 +30,7 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
         return axiosHeaders
     } catch (error) {
         console.error('Caught error', error)
+        core.setFailed('Caught error during authentication.')
     }
 }
 
