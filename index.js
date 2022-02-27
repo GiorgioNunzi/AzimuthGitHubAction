@@ -3,7 +3,7 @@ const github = require('@actions/github');
 const { default: axios } = require('axios');
 
 async function azAuthenticateToAzetiApi(username, password, endpoint) {
-    console.log("Authenticating...");
+    console.log("Authenticating towards endpoint " + endpoint + " with username " + username.substring(0, 3) + "*** ...");
     let payload = { 'username': username, 'password': password }
     var headers = {
         'X-Requested-With': 'XMLHttpRequest'
@@ -66,14 +66,14 @@ async function azWriteSensor(siteGuid, sensorName, value_float, value_string, re
 }
 
 try {
-    // `who-to-greet` input defined in action metadata file
-    const nameToGreet = core.getInput('who-to-greet');
-    console.log(`Hello ${nameToGreet}!`);
-    const time = (new Date()).toTimeString();
-    core.setOutput("time", time);
+    // // `who-to-greet` input defined in action metadata file
+    // const nameToGreet = core.getInput('who-to-greet');
+    // console.log(`Hello ${nameToGreet}!`);
+    // const time = (new Date()).toTimeString();
+    // core.setOutput("time", time);
     // Get the JSON webhook payload for the event that triggered the workflow
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
-    console.log(`The event payload: ${payload}`);
+    // const payload = JSON.stringify(github.context.payload, undefined, 2)
+    // console.log(`The event payload: ${payload}`);
     const username = core.getInput('username')
     const password = core.getInput('password')
     const endpoint = core.getInput('endpoint')
