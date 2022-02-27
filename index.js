@@ -29,8 +29,15 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
         };
         return axiosHeaders
     } catch (error) {
+        if (error.response) {
+            if (error.response.status === 404) {
+                console.error('Got 404 unauthorized', error)
+                core.setFailed('Authorization failed: ' + error)
+                return
+            }
+        }
         console.error('Caught error', error)
-        core.setFailed('Caught error during authentication.')
+        core.setFailed('Caught error during authentication: ' + error)
     }
 }
 
@@ -61,7 +68,7 @@ async function azWriteSensor(siteGuid, sensorName, value_float, value_string, re
             console.error('Error')
         }
     } catch (error) {
-        console.error('Caught error', error)
+        console.error('Caught error: ' + error)
     }
 
 }
