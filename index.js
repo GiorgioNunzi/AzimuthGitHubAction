@@ -116,7 +116,7 @@ try {
     const site_guid = core.getInput('site_guid')
     const script_name = core.getInput('script_name')
     const sensor_id_operation = '~ EdgeOrchestrator: Operation'
-    let headers = await azAuthenticateToAzetiApi(username, password, endpoint)
+    let headers = azAuthenticateToAzetiApi(username, password, endpoint)
     azWriteSensor(site_guid, sensor_id_operation, null, 'update script ' + script_name, headers)
 } catch (error) {
     core.setFailed(error.message);
