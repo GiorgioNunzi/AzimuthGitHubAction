@@ -71,33 +71,24 @@ async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, heade
 
 }
 
-function azTriggerCommand(siteSerial, actionName, commandName) {
-    console.debug("Triggering action: " + actionName + ",  command: " + commandName + " on site serial: " + siteSerial);
-    return new Promise((resolve, reject) => {
-        var payload = {
-            'command': commandName,
-            'action': actionName,
-            'serial': siteSerial
-        }
-        //console.debug(JSON.stringify(payload, null, 2));
-        let url = getBaseUrl() + "/actions";
-        //console.debug(getHeaders());
-        axios.post(url, payload, getHeaders()).then(
-            response => {
-                if (response.status !== 200) {
-                    console.log(response.status);
-                    reject(ERRS.E013 + '. Server return ' + response.status)
-                } else if ('exec_uid' in response.data) { //TODO check this
-                    //            console.debug(JSON.stringify(response, null, 4));
-                    resolve(true);
-                } else {
-                    reject(ERRS.E014);
-                }
-            }
-        ).catch(
-            error => reject(error)//TODO: better //handleAzetiRestApiError(error, azTriggerCommand, arguments)
-        );
-    });
+async function azTriggerCommand(siteSerial, actionName, commandName, headers, endpoint) {
+    console.log("Triggering action: " + actionName + ",  command: " + commandName + " on site serial: " + siteSerial);
+    var payload = {
+        'command': commandName,
+        'action': actionName,
+        'serial': siteSerial
+    }
+    let url = endpoint + "/actions";
+    let response = await axios.post(url, payload, headers);
+    if (response.status !== 200) {
+        console.log(response.status);
+        console.setFailed('Error while triggering command. Status: ' + response.status)
+    } else if ('exec_uid' in response.data) { //TODO check this
+        console.log('Command was triggered successfully. Exec_uid: ' + response.data.exec_uid)
+    } else {
+        console.log('Printing response', response)
+        console.setFailed('Could not find exec_uid in response.')
+    }
 }
 
 try {
@@ -120,8 +111,8 @@ try {
     const command_name = 'PullOperation'
     azAuthenticateToAzetiApi(username, password, endpoint).then(headers => {
         console.log("Headers received:", headers);
-        azWriteSensor(site_guid, sensor_id_operation, 'update script ' + script_name, endpoint, headers)
-        azTriggerCommand(site_serial, action_name, command_name)
+        azWriteSensor(site_guid, sensor_id_operation, 'update script ' + script_name, endpoint, headers)//don't wait for promise to finish
+        azTriggerCommand(site_serial, action_name, command_name, headers, endpoint)
     }).catch(error => core.setFailed('error occurred: ', error))
 } catch (error) {
     core.setFailed(error.message);
