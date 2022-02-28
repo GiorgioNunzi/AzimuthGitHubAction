@@ -41,36 +41,59 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
     }
 }
 
-async function azWriteSensor(siteGuid, sensorName, value_float, value_string, returnHandler) {
+async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, headers) {
     console.log("Writing sensor: " + sensorName);
     var payloadInside = {
         'sensor_id': sensorName,
         'timestamp': new Date().toISOString()
     }
-    if (value_string != null) {
-        payloadInside['valueType'] = 'string';
-        payloadInside['type'] = 'string';
-        payloadInside['value'] = value_string;
-    } else {
-        payloadInside['valueType'] = 'float'
-        payloadInside['type'] = 'float'
-        payloadInside['value'] = value_float
-    }
+    payloadInside['valueType'] = 'string';
+    payloadInside['type'] = 'string';
+    payloadInside['value'] = value_string;
     var payload = [payloadInside];
-    let url = getBaseUrl() + "/import/" + siteGuid + "/hd";
+    let url = endpoint + "/import/" + siteGuid + "/hd";
     try {
-        const response = await axios.put(url, payload, getHeaders())
+        const response = await axios.put(url, payload, headers)
         if (response) {
             if (response.status !== 200) {
-                console.error('Error. Server returned ' + response.status);
+                core.setFailed('Error while writing sensor. Server returned ' + response.status);
             }
         } else {
             console.error('Error')
         }
     } catch (error) {
-        console.error('Caught error: ' + error)
+        console.error('Caught error while writing sensor. Error: ' + error)
     }
 
+}
+
+function azTriggerCommand(siteSerial, actionName, commandName) {
+    console.debug("azTriggerAction. Action: " + actionName + ". Command: " + commandName + ". Site serial: " + siteSerial);
+    return new Promise((resolve, reject) => {
+        var payload = {
+            'command': commandName,
+            'action': actionName,
+            'serial': siteSerial
+        }
+        //console.debug(JSON.stringify(payload, null, 2));
+        let url = getBaseUrl() + "/actions";
+        //console.debug(getHeaders());
+        axios.post(url, payload, getHeaders()).then(
+            response => {
+                if (response.status !== 200) {
+                    console.log(response.status);
+                    reject(ERRS.E013 + '. Server return ' + response.status)
+                } else if ('exec_uid' in response.data) { //TODO check this
+                    //            console.debug(JSON.stringify(response, null, 4));
+                    resolve(true);
+                } else {
+                    reject(ERRS.E014);
+                }
+            }
+        ).catch(
+            error => reject(error)//TODO: better //handleAzetiRestApiError(error, azTriggerCommand, arguments)
+        );
+    });
 }
 
 try {
@@ -85,7 +108,11 @@ try {
     const username = core.getInput('username')
     const password = core.getInput('password')
     const endpoint = core.getInput('endpoint')
+    const site_guid = core.getInput('site_guid')
+    const script_name = core.getInput('script_name')
+    const sensor_id_operation = '~ EdgeOrchestrator: Operation'
     azAuthenticateToAzetiApi(username, password, endpoint)
+    azWriteSensor(site_guid, sensor_id_operation, null, 'update script ' + script_name)
 } catch (error) {
     core.setFailed(error.message);
 }
