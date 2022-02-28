@@ -27,7 +27,6 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         };
-        console.log("New headers: ", axiosHeaders);
         return axiosHeaders
     } catch (error) {
         if (error.response) {
@@ -117,6 +116,7 @@ try {
     const script_name = core.getInput('script_name')
     const sensor_id_operation = '~ EdgeOrchestrator: Operation'
     let headers = azAuthenticateToAzetiApi(username, password, endpoint)
+    console.log("Headers received:", headers);
     azWriteSensor(site_guid, sensor_id_operation, null, 'update script ' + script_name, headers)
 } catch (error) {
     core.setFailed(error.message);
