@@ -42,7 +42,7 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
 }
 
 async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, headers) {
-    console.log("Writing sensor <" + sensorName + "> towards endpoint <" + endpoint + ">");
+    console.log("Writing sensor <" + sensorName + "> towards endpoint <" + endpoint + "> with headers " + JSON.stringify(headers, null, 2));
     var payloadInside = {
         'sensor_id': sensorName,
         'timestamp': new Date().toISOString()
@@ -62,7 +62,11 @@ async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, heade
             console.error('Error')
         }
     } catch (error) {
-        console.error('Caught error while writing sensor. Error: ' + error)
+        if (error.response)
+            console.error('Caught error while writing sensor. Response only:', response)
+        else
+            console.error('Caught error while writing sensor. Entire error:', error)
+        core.setFailed('Caught error while writing sensor. Error: ' + error)
     }
 
 }
