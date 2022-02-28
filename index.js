@@ -31,8 +31,8 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
     } catch (error) {
         if (error.response) {
             if (error.response.status === 404) {
-                console.error('Got 404 unauthorized', error)
-                core.setFailed('Authorization failed: ' + error)
+                console.error('Got 404 unauthorized', error.response)
+                core.setFailed('Authorization failed: ' + error.response)
                 return
             }
         }
@@ -42,7 +42,7 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
 }
 
 async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, headers) {
-    console.log("Writing sensor: " + sensorName);
+    console.log("Writing sensor <" + sensorName + "> towards endpoint <" + endpoint + ">");
     var payloadInside = {
         'sensor_id': sensorName,
         'timestamp': new Date().toISOString()
@@ -111,8 +111,8 @@ try {
     const site_guid = core.getInput('site_guid')
     const script_name = core.getInput('script_name')
     const sensor_id_operation = '~ EdgeOrchestrator: Operation'
-    azAuthenticateToAzetiApi(username, password, endpoint)
-    azWriteSensor(site_guid, sensor_id_operation, null, 'update script ' + script_name)
+    let headers = azAuthenticateToAzetiApi(username, password, endpoint)
+    azWriteSensor(site_guid, sensor_id_operation, null, 'update script ' + script_name, headers)
 } catch (error) {
     core.setFailed(error.message);
 }
