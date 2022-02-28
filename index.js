@@ -42,7 +42,7 @@ async function azAuthenticateToAzetiApi(username, password, endpoint) {
 }
 
 async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, headers) {
-    console.log("Writing sensor <" + sensorName + "> towards endpoint <" + endpoint + "> with headers " + JSON.stringify(headers, null, 2));
+    console.log("Writing sensor <" + sensorName + "> towards endpoint <" + endpoint + "> with value <" + value_string + "> on site with guid <" + siteGuid + ">");
     var payloadInside = {
         'sensor_id': sensorName,
         'timestamp': new Date().toISOString()
@@ -72,7 +72,7 @@ async function azWriteSensor(siteGuid, sensorName, value_string, endpoint, heade
 }
 
 function azTriggerCommand(siteSerial, actionName, commandName) {
-    console.debug("azTriggerAction. Action: " + actionName + ". Command: " + commandName + ". Site serial: " + siteSerial);
+    console.debug("Triggering action: " + actionName + ",  command: " + commandName + " on site serial: " + siteSerial);
     return new Promise((resolve, reject) => {
         var payload = {
             'command': commandName,
@@ -113,11 +113,15 @@ try {
     const password = core.getInput('password')
     const endpoint = core.getInput('endpoint')
     const site_guid = core.getInput('site_guid')
+    const site_serial = core.getInput('site_serial')
     const script_name = core.getInput('script_name')
     const sensor_id_operation = '~ EdgeOrchestrator: Operation'
+    const action_name = 'ScriptsOrchestrator'
+    const command_name = 'PullOperation'
     azAuthenticateToAzetiApi(username, password, endpoint).then(headers => {
         console.log("Headers received:", headers);
         azWriteSensor(site_guid, sensor_id_operation, 'update script ' + script_name, endpoint, headers)
+        azTriggerCommand(site_serial, action_name, command_name)
     }).catch(error => core.setFailed('error occurred: ', error))
 } catch (error) {
     core.setFailed(error.message);
