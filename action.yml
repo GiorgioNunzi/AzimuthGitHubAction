@@ -13,6 +13,8 @@ inputs:
     default: "https://cloud.azeti.net"
   site_guid:
     description: "The guid of the site running the script"
+  site_serial:
+    description: "The serial number of the site running the script"
   script_name:
     description: "The name of the script as given in azimuth"
 runs:
