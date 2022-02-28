@@ -117,7 +117,7 @@ try {
     const sensor_id_operation = '~ EdgeOrchestrator: Operation'
     azAuthenticateToAzetiApi(username, password, endpoint).then(headers => {
         console.log("Headers received:", headers);
-        azWriteSensor(site_guid, sensor_id_operation, null, 'update script ' + script_name, headers)
+        azWriteSensor(site_guid, sensor_id_operation, 'update script ' + script_name, endpoint, headers)
     }).catch(error => core.setFailed('error occurred: ', error))
 } catch (error) {
     core.setFailed(error.message);
